@@ -12,11 +12,13 @@ app.use(require("express-session")({
     resave: false,
     saveUninitialized: false
 }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.set("view engine", "ejs");
 passport.serializeUser(user.serializeUser());       // Method from "passport-local-mongoose"
 passport.deserializeUser(user.deserializeUser());   // Method from "passport-local-mongoose"
+
+app.set("view engine", "ejs");
 mongoose.connect("mongodb://localhost/authentication_demo_app", { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.get("/", function (req, res)
@@ -28,6 +30,28 @@ app.get("/secret", function (req, res)
 {
     res.render("secret");
 });
+
+app.get("/register", function (req, res)
+{
+    res.render("register");
+});
+
+app.post("/register", function (req, res)
+{
+    user.register(new user({ username: req.body.username }), req.body.password, function (err, user)
+    {
+        if (err)
+        {
+            console.log(err);
+            return res.render("register");
+        }
+        // Logging the user in and keeping track of the session
+        passport.authenticate("local")(req, res, function ()
+        {
+            res.redirect("/secret");
+        });
+    });
+})
 
 app.listen(3000, function ()
 {
