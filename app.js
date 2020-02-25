@@ -15,6 +15,8 @@ app.use(require("express-session")({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+passport.use(new LocalStrategy(user.authenticate()));
 passport.serializeUser(user.serializeUser());       // Method from "passport-local-mongoose"
 passport.deserializeUser(user.deserializeUser());   // Method from "passport-local-mongoose"
 
@@ -51,7 +53,22 @@ app.post("/register", function (req, res)
             res.redirect("/secret");
         });
     });
-})
+});
+
+app.get("/login", function (req, res)
+{
+    res.render("login");
+});
+
+// Middleware
+// Takes username and password from request body and validates with data in database
+app.post("/login", passport.authenticate("local", {
+    successRedirect: "/secret",
+    failureRedirect: "/login"
+}), function (req, res)
+{
+
+});
 
 app.listen(3000, function ()
 {
